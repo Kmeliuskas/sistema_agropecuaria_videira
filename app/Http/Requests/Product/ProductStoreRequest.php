@@ -49,6 +49,8 @@ class ProductStoreRequest extends FormRequest
             'level' => ['nullable', 'string', 'max:20'],
             'position' => ['nullable', 'string', 'max:20'],
             'image' => ['nullable', 'string', 'max:255'],
+            'attribute_values' => ['nullable', 'array'],
+            'attribute_values.*' => ['nullable', 'string'],
         ];
     }
 

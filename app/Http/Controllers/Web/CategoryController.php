@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -150,6 +151,29 @@ class CategoryController extends Controller
         return redirect()
             ->route('categories.index')
             ->with('success', 'Categoria excluída com sucesso!');
+    }
+
+    /**
+     * Retorna os atributos associados a uma categoria (JSON paraAJAX).
+     */
+    public function attributes(Category $category): JsonResponse
+    {
+        $this->authorize('view', $category);
+
+        $attributes = $category->attributes()
+            ->orderByPivot('sort_order')
+            ->get()
+            ->map(fn ($attr) => [
+                'id' => $attr->id,
+                'name' => $attr->name,
+                'slug' => $attr->slug,
+                'type' => $attr->type,
+                'options' => $attr->options,
+            ]);
+
+        return response()->json([
+            'attributes' => $attributes,
+        ]);
     }
 
     /**

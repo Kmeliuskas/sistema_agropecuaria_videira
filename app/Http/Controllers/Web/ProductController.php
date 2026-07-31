@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attribute;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Manufacturer;
@@ -57,7 +58,7 @@ class ProductController extends Controller
     {
         $this->authorize('view', $product);
 
-        $product->load(['category', 'subcategory', 'brand', 'manufacturer', 'unit', 'warehouse', 'stockBalances' => function ($q) {
+        $product->load(['category', 'subcategory', 'brand', 'manufacturer', 'unit', 'warehouse', 'attributes', 'stockBalances' => function ($q) {
             $q->orderByDesc('updated_at');
         }, 'stockBalances.warehouse']);
 
@@ -84,7 +85,12 @@ class ProductController extends Controller
         $data = $this->validateProduct($request);
         $this->normalizeNumeric($data);
 
+        $attributeValues = $data['attribute_values'] ?? [];
+        unset($data['attribute_values']);
+
         $product = Product::create($data);
+
+        $this->syncAttributeValues($product, $attributeValues);
 
         return redirect()
             ->route('products.show', $product)
@@ -109,12 +115,32 @@ class ProductController extends Controller
         $data = $this->validateProduct($request, $product);
         $this->normalizeNumeric($data);
 
+        $attributeValues = $data['attribute_values'] ?? [];
+        unset($data['attribute_values']);
+
         $product->update($data);
+        $this->syncAttributeValues($product, $attributeValues);
         $product->broadcastRowUpdate();
 
         return redirect()
             ->route('products.show', $product)
             ->with('success', "Produto {$product->name} atualizado.");
+    }
+
+    /**
+     * Sincroniza os valores de atributos de um produto.
+     */
+    protected function syncAttributeValues(Product $product, array $attributeValues): void
+    {
+        foreach ($attributeValues as $attributeId => $value) {
+            if ($value === null || $value === '') {
+                $product->attributes()->detach($attributeId);
+                continue;
+            }
+            $product->attributes()->syncWithoutDetaching([
+                $attributeId => ['value' => $value],
+            ]);
+        }
     }
 
     /**
@@ -182,6 +208,21 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'category_id']);
 
+        $categoryId = $product?->category_id;
+        $categoryAttributes = collect();
+        if ($categoryId) {
+            $categoryAttributes = Category::find($categoryId)?->attributes()
+                ->orderByPivot('sort_order')
+                ->get()
+                ->map(fn ($attr) => [
+                    'id' => $attr->id,
+                    'name' => $attr->name,
+                    'slug' => $attr->slug,
+                    'type' => $attr->type,
+                    'options' => $attr->options,
+                ]);
+        }
+
         return [
             'categories' => $getActiveOptions(Category::class, $product?->category_id),
             'subcategories' => $subcategories->map(fn($s) => [
@@ -193,6 +234,14 @@ class ProductController extends Controller
             'manufacturers' => $getActiveOptions(Manufacturer::class, $product?->manufacturer_id),
             'units' => $getActiveOptions(Unit::class, $product?->unit_id),
             'warehouses' => $getActiveOptions(Warehouse::class, $product?->warehouse_id),
+            'categoryAttributes' => $categoryAttributes,
+            'allAttributes' => Attribute::query()->where('is_active', true)->orderBy('sort_order')->get()->map(fn ($attr) => [
+                'id' => $attr->id,
+                'name' => $attr->name,
+                'slug' => $attr->slug,
+                'type' => $attr->type,
+                'options' => $attr->options,
+            ]),
         ];
     }
 
@@ -219,6 +268,8 @@ class ProductController extends Controller
             'last_cost' => ['nullable', 'numeric', 'min:0'],
             'average_cost' => ['nullable', 'numeric', 'min:0'],
             'active' => ['boolean'],
+            'attribute_values' => ['nullable', 'array'],
+            'attribute_values.*' => ['nullable', 'string'],
         ]);
     }
 }

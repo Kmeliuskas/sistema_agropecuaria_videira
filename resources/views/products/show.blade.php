@@ -41,6 +41,20 @@
             <div><dt class="text-muted-foreground">Estoque mín.</dt><dd class="font-medium text-foreground">{{ number_format($product->min_stock, 0, ',', '.') }}</dd></div>
             <div><dt class="text-muted-foreground">Custo médio</dt><dd class="font-medium text-foreground">R$ {{ number_format($product->average_cost, 2, ',', '.') }}</dd></div>
         </dl>
+
+        @if ($product->attributes->isNotEmpty())
+        <div class="card p-6 mt-4">
+            <h3 class="mb-4 font-semibold text-foreground">Atributos específicos</h3>
+            <dl class="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+                @foreach ($product->attributes as $attr)
+                    <div>
+                        <dt class="text-muted-foreground">{{ $attr->name }}</dt>
+                        <dd class="font-medium text-foreground">{{ $attr->pivot?->value ?? '—' }}</dd>
+                    </div>
+                @endforeach
+            </dl>
+        </div>
+        @endif
     </div>
 
     <div class="card p-6">

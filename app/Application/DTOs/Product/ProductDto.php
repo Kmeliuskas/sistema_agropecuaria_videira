@@ -42,6 +42,7 @@ class ProductDto extends Dto
         public readonly ?string $level,
         public readonly ?string $position,
         public readonly ?string $image,
+        public readonly array $attributeValues, // [attribute_id => value]
     ) {}
 
     public static function fromArray(array $data): static
@@ -78,6 +79,7 @@ class ProductDto extends Dto
             level: $data['level'] ?? null,
             position: $data['position'] ?? null,
             image: $data['image'] ?? null,
+            attributeValues: $data['attribute_values'] ?? [],
         );
     }
 
@@ -114,6 +116,7 @@ class ProductDto extends Dto
             'level' => $this->level,
             'position' => $this->position,
             'image' => $this->image,
+            'attribute_values' => $this->attributeValues,
         ]);
     }
 }

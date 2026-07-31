@@ -104,6 +104,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/catalogos/categorias/{category}/editar', [CategoryController::class, 'edit'])->name('categories.edit');
     Route::put('/catalogos/categorias/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/catalogos/categorias/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+    Route::get('/api/categorias/{category}/atributos', [CategoryController::class, 'attributes'])->name('categories.attributes');
 
     // Marcas
     Route::get('/catalogos/marcas', [BrandController::class, 'index'])->name('brands.index');

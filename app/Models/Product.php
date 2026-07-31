@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\HtmlString;
@@ -30,8 +31,8 @@ class Product extends Model
     use SoftDeletes;
 
     protected $auditableFields = [
-        'internal_code', 'barcode', 'name', 'description', 'category_id',
-        'subcategory_id', 'brand_id', 'manufacturer_id', 'model', 'unit_id',
+        'internal_code', 'barcode', 'name', 'description',
+        'category_id', 'subcategory_id', 'brand_id', 'manufacturer_id', 'model', 'unit_id',
         'min_stock', 'max_stock', 'last_cost', 'average_cost', 'sale_price',
         'ncm', 'cfop', 'cst', 'control_batch', 'control_expiry', 'serialized',
         'active', 'warehouse_id', 'aisle', 'corridor', 'shelf', 'level', 'position',
@@ -103,6 +104,12 @@ class Product extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(ProductAttachment::class);
+    }
+
+    public function attributes(): BelongsToMany
+    {
+        return $this->belongsToMany(Attribute::class, 'product_attribute')
+            ->withPivot('value');
     }
 
     /**

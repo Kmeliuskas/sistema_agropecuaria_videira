@@ -47,6 +47,13 @@ class ProductResource extends JsonResource
                 'position' => $this->position,
             ],
             'image' => $this->image,
+            'attributes' => $this->whenLoaded('attributes', fn () => $this->attributes->map(fn ($attr) => [
+                'id' => $attr->id,
+                'name' => $attr->name,
+                'slug' => $attr->slug,
+                'type' => $attr->type,
+                'value' => $attr->pivot?->value,
+            ])),
             'is_below_min' => $this->isBelowMin(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

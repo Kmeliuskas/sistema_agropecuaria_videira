@@ -4,6 +4,10 @@
     $isEdit = isset($product);
     $title = $isEdit ? "Editar Produto — {$product->name}" : 'Novo Produto — WMS';
     $pageTitle = $isEdit ? "Editar Produto" : "Novo Produto";
+
+    // Atributos da categoria selecionada (para editar)
+    $categoryAttributes = $categoryAttributes ?? collect();
+    $allAttributes = $allAttributes ?? collect();
 @endphp
 
 @section('title', $title)
@@ -73,7 +77,8 @@
                             @include('catalogs.partials.field-select-search', ['field' => [
                                 'name' => 'category_id',
                                 'options' => $categories,
-                                'value' => old('category_id', $product->category_id ?? '')
+                                'value' => old('category_id', $product->category_id ?? ''),
+                                'dataAttributeTarget' => 'category-attributes',
                             ], 'errors' => $errors])
                         </div>
                         <div>
@@ -145,6 +150,42 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="card p-6" id="category-attributes">
+                    <h2 class="mb-4 font-semibold text-foreground">Atributos específicos</h2>
+                    <p class="mb-4 text-xs text-muted-foreground">Os campos abaixo são gerados automaticamente com base na categoria selecionada.</p>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2" id="dynamic-attributes">
+                        @foreach ($categoryAttributes as $attr)
+                            <div data-attribute-id="{{ $attr['id'] }}">
+                                <label class="mb-1 block text-sm font-medium text-foreground">{{ $attr['name'] }}</label>
+                                @if ($attr['type'] === 'select' && !empty($attr['options']))
+                                    <select name="attribute_values[{{ $attr['id'] }}]"
+                                        class="w-full rounded-lg border border-border px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
+                                        <option value="">Selecione...</option>
+                                        @foreach (json_decode($attr['options'], true) ?? [] as $option)
+                                            <option value="{{ $option }}"
+                                                {{ old("attribute_values.{$attr['id']}", $product->attributes->where('id', $attr['id'])->first()->pivot->value ?? '') == $option ? 'selected' : '' }}>
+                                                {{ $option }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                @elseif ($attr['type'] === 'boolean')
+                                    <div class="flex items-center gap-2">
+                                        <input type="hidden" name="attribute_values[{{ $attr['id'] }}]" value="0">
+                                        <input type="checkbox" name="attribute_values[{{ $attr['id'] }}]" value="1"
+                                            {{ old("attribute_values.{$attr['id']}", $product->attributes->where('id', $attr['id'])->first()->pivot->value ?? '') ? 'checked' : '' }}
+                                            class="h-4 w-4 rounded border-border text-foreground">
+                                    </div>
+                                @else
+                                    <input type="text" name="attribute_values[{{ $attr['id'] }}]"
+                                        value="{{ old("attribute_values.{$attr['id']}", $product->attributes->where('id', $attr['id'])->first()->pivot->value ?? '') }}"
+                                        placeholder="ex: {{ $attr['name'] }}"
+                                        class="w-full rounded-lg border border-border px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -195,6 +236,84 @@
             input.value = (input.value || '').replace(/\D/g, '');
         });
     });
+
+    // Atualiza campos de atributos dinâmicos quando a categoria muda
+    const categorySelect = document.querySelector('select[name="category_id"]');
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function () {
+            const categoryId = this.value;
+            const container = document.getElementById('dynamic-attributes');
+            const wrapper = document.getElementById('category-attributes');
+
+            if (!categoryId || !container) {
+                if (wrapper) wrapper.style.display = 'none';
+                return;
+            }
+
+            // Busca atributos da categoria via endpoint AJAX
+            fetch(`/api/categorias/${categoryId}/atributos`)
+                .then(response => response.json())
+                .then(data => {
+                    const attributes = data.attributes || [];
+                    container.innerHTML = '';
+
+                    if (attributes.length === 0) {
+                        if (wrapper) wrapper.style.display = 'none';
+                        return;
+                    }
+
+                    if (wrapper) wrapper.style.display = '';
+
+                    attributes.forEach(attr => {
+                        const div = document.createElement('div');
+                        div.setAttribute('data-attribute-id', attr.id);
+
+                        let inputHtml = '';
+                        if (attr.type === 'select' && attr.options && attr.options.length > 0) {
+                            inputHtml = `<select name="attribute_values[${attr.id}]" class="w-full rounded-lg border border-border px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
+                                <option value="">Selecione...</option>
+                                ${attr.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                            </select>`;
+                        } else if (attr.type === 'boolean') {
+                            inputHtml = `<div class="flex items-center gap-2">
+                                <input type="hidden" name="attribute_values[${attr.id}]" value="0">
+                                <input type="checkbox" name="attribute_values[${attr.id}]" value="1" class="h-4 w-4 rounded border-border text-foreground">
+                            </div>`;
+                        } else {
+                            inputHtml = `<input type="text" name="attribute_values[${attr.id}]" placeholder="ex: ${attr.name}" class="w-full rounded-lg border border-border px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">`;
+                        }
+
+                        div.innerHTML = `
+                            <label class="mb-1 block text-sm font-medium text-foreground">${attr.name}</label>
+                            ${inputHtml}
+                        `;
+                        container.appendChild(div);
+                    });
+
+                    // Reaplica máscaras nos novos inputs
+                    container.querySelectorAll('input[data-money]').forEach(function (input) {
+                        input.addEventListener('input', function () {
+                            this.value = maskMoney(this.value);
+                        });
+                    });
+                    container.querySelectorAll('input[data-integer]').forEach(function (input) {
+                        input.addEventListener('input', function () {
+                            this.value = (this.value || '').replace(/\D/g, '');
+                        });
+                    });
+                })
+                .catch(() => {
+                    if (wrapper) wrapper.style.display = 'none';
+                });
+        });
+
+        // Trigger inicial se já tem categoria selecionada
+        if (categorySelect.value) {
+            categorySelect.dispatchEvent(new Event('change'));
+        } else if (wrapper) {
+            wrapper.style.display = 'none';
+        }
+    }
 })();
 </script>
 @endpush
