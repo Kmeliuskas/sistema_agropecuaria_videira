@@ -167,7 +167,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: wms_redis
+    container_name: wms_agropecuaria_redis
     restart: unless-stopped
     volumes:
       - redis_data:/data
