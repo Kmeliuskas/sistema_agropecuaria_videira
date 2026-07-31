@@ -1,0 +1,302 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../../resources/views/**/*.blade.php';
+
+/* =========================================================
+   Design tokens (Tailwind v4 CSS-first) — baseados na
+   skill tailwind-design-system. Cores em OKLCH para melhor
+   percepção; suporte a dark mode via @custom-variant.
+   ========================================================= */
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Cores semânticas (tema claro) */
+    --color-background: oklch(98% 0.004 250);
+    --color-surface: oklch(100% 0 0);
+    --color-foreground: oklch(21% 0.02 260);
+    --color-muted: oklch(96.5% 0.005 250);
+    --color-muted-foreground: oklch(52% 0.02 260);
+
+    --color-primary: oklch(48% 0.12 255);
+    --color-primary-foreground: oklch(98% 0.01 260);
+    --color-accent: oklch(95% 0.02 255);
+    --color-accent-foreground: oklch(40% 0.12 255);
+
+    --color-border: oklch(92% 0.006 255);
+    --color-ring: oklch(55% 0.12 255);
+    --color-ring-offset: oklch(100% 0 0);
+
+    --color-success: oklch(62% 0.15 150);
+    --color-success-foreground: oklch(98% 0.01 150);
+    --color-danger: oklch(58% 0.2 25);
+    --color-danger-foreground: oklch(98% 0.01 25);
+
+    /* Raios */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    /* Animações */
+    --animate-fade-in: fade-in 0.25s ease-out both;
+    --animate-slide-up: slide-up 0.3s ease-out both;
+    --animate-scale-in: scale-in 0.2s ease-out both;
+
+    @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slide-up {
+        from { transform: translateY(0.5rem); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes scale-in {
+        from { transform: scale(0.96); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+}
+
+/* Dark mode (class-based) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+    color-scheme: dark;
+
+    --color-background: oklch(19% 0.015 260);
+    --color-surface: oklch(24% 0.02 260);
+    --color-foreground: oklch(96% 0.01 260);
+    --color-muted: oklch(28% 0.02 260);
+    --color-muted-foreground: oklch(68% 0.02 260);
+
+    --color-primary: oklch(68% 0.14 255);
+    --color-primary-foreground: oklch(18% 0.02 260);
+    --color-accent: oklch(30% 0.04 255);
+    --color-accent-foreground: oklch(90% 0.03 255);
+
+    --color-border: oklch(32% 0.02 260);
+    --color-ring: oklch(70% 0.14 255);
+    --color-ring-offset: oklch(19% 0.015 260);
+
+    --color-success: oklch(68% 0.16 150);
+    --color-success-foreground: oklch(18% 0.02 150);
+    --color-danger: oklch(64% 0.2 25);
+    --color-danger-foreground: oklch(18% 0.02 25);
+}
+
+/* =========================================================
+   Estilos base + componentes
+   ========================================================= */
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    /* Selects: garante contraste de texto em dark/light (skill §6 color-dark-mode
+       + §1 contrast). A seta usa cor neutra e o popup nativo das <option> herda
+       o color-scheme do tema, mantendo texto legível sobre fundo correto. */
+    select {
+        @apply appearance-none bg-surface pl-3 pr-10
+               bg-[length:1.25rem] bg-[right_0.75rem_center] bg-no-repeat text-foreground;
+        padding-right: 2.5rem !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    }
+    /* <option> precisa de fundo/texto explícitos no dark para alguns navegadores
+       (o popup nativo não herda sempre o color-scheme). */
+    .dark select option {
+        @apply bg-surface text-foreground;
+    }
+
+    html {
+        @apply antialiased;
+    }
+
+    /* Evita o zoom automático do iOS Safari ao focar campos no mobile
+       (Layout P5: readable-font-size). O Safari faz zoom quando o
+       font-size do input é < 16px. Forçamos 16px (1rem) em todos os
+       formulários — cobre tanto a utility .input quanto classes inline
+       `text-sm` usadas nos blade. O !important garante que vence as
+       utilities do Tailwind (text-sm) presentes em alguns selects/inputs.
+       Não desabilitamos o zoom da viewport (anti-pattern de acessibilidade). */
+    input,
+    select,
+    textarea {
+        font-size: 1rem !important;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-family: var(--font-sans);
+        line-height: 1.5; /* Tipografia P6: corpo legível */
+    }
+
+    /* Acessibilidade P1: anel de foco visível e consistente em toda
+       interface (2px) — removido só onde houver substituto explícito. */
+    :focus-visible {
+        @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    /* Animação P7: respeita preferência por menos movimento. */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+
+    /* Barra de rolagem discreta */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+        @apply rounded-full bg-border;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+        @apply bg-muted;
+    }
+}
+
+@layer components {
+    /* Card padrão */
+    .card {
+        @apply rounded-xl border border-border bg-surface shadow-sm;
+    }
+}
+
+@utility card {
+    @apply rounded-xl border border-border bg-surface shadow-sm;
+}
+
+/* Botões — utilities (Tailwind v4: @utility permite @apply cruzado) */
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium
+           transition-all duration-200 ease-out
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background
+           active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+}
+
+@utility btn-primary {
+    @apply btn bg-primary text-primary-foreground shadow-sm hover:brightness-110 hover:shadow-md;
+}
+
+@utility btn-secondary {
+    @apply btn border border-border bg-surface text-foreground hover:bg-muted;
+}
+
+@utility btn-danger {
+    @apply btn border border-danger/30 bg-danger/10 text-danger hover:bg-danger hover:text-danger-foreground;
+}
+
+@utility btn-success {
+    @apply btn bg-success text-success-foreground shadow-sm hover:brightness-110 hover:shadow-md;
+}
+
+@utility btn-danger-outline {
+    @apply btn border border-danger/40 text-danger transition hover:bg-danger/10;
+}
+
+@utility btn-ghost {
+    @apply btn text-muted-foreground hover:bg-muted hover:text-foreground;
+}
+
+@utility input {
+    @apply w-full rounded-lg border border-border bg-surface px-3 py-2 text-foreground shadow-sm
+           outline-none transition-colors duration-200
+           placeholder:text-muted-foreground/70
+           focus:border-primary focus:ring-2 focus:ring-primary/30;
+    /* Mantém 16px (1rem) para não disparar zoom no iOS — o text-sm
+       (14px) da regra base de formulários é sobrescrito aqui. */
+    font-size: 1rem;
+}
+
+@utility label {
+    @apply mb-1 block text-sm font-medium text-foreground;
+}
+
+@utility badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+/* Tipografia P6: cifras/números alinhados para evitar shift em colunas. */
+@utility num {
+    @apply tabular-nums;
+}
+
+@utility badge-success { @apply badge bg-success/15 text-success; }
+@utility badge-muted { @apply badge bg-muted text-muted-foreground; }
+@utility badge-danger { @apply badge bg-danger/15 text-danger; }
+@utility badge-primary { @apply badge bg-primary/15 text-primary; }
+@utility badge-warning { @apply badge bg-amber-500/15 text-amber-600 dark:text-amber-400; }
+@utility badge-info { @apply badge bg-sky-500/15 text-sky-600 dark:text-sky-400; }
+
+/* Alertas */
+@utility alert-success { @apply rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success; }
+@utility alert-danger { @apply rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger; }
+
+/* =========================================================
+   Ícones de navegação (stroke consistency P4)
+   ========================================================= */
+@utility nav-icon {
+    @apply h-5 w-5 shrink-0;
+}
+
+/* =========================================================
+   Botões de ação em tabelas (renderizados via Alpine.js)
+   ========================================================= */
+@utility action-btn-edit {
+    @apply rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted;
+}
+@utility action-btn-delete {
+    @apply rounded-lg border border-danger/30 px-3 py-1 text-xs font-medium text-danger transition hover:bg-danger/10;
+}
+@utility action-btn-view {
+    @apply rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted;
+}
+
+/* =========================================================
+   KPI / Stat cards (dashboard)
+   ========================================================= */
+@utility stat-card {
+    @apply card flex flex-col gap-3 p-5 transition-all duration-200 hover:shadow-md;
+}
+
+@utility stat-icon {
+    @apply flex h-11 w-11 items-center justify-center rounded-xl;
+}
+
+/* =========================================================
+   Gráfico de barras (CSS-only, tokens)
+   ========================================================= */
+@utility bar-track {
+    @apply flex h-full w-full items-end gap-2;
+}
+@utility bar-col {
+    @apply flex flex-1 flex-col items-center justify-end gap-1.5;
+}
+@utility bar-fill {
+    @apply w-full rounded-t-md transition-all duration-300 ease-out;
+}
+
+/* =========================================================
+   Donut (CSS conic-gradient, tokens)
+   ========================================================= */
+@utility donut {
+    @apply relative rounded-full;
+    background: conic-gradient(var(--donut-stops, transparent));
+}
+@utility donut-hole {
+    @apply absolute inset-0 m-auto flex flex-col items-center justify-center rounded-full bg-surface text-center;
+}

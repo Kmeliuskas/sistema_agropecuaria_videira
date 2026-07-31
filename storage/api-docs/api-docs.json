@@ -1,0 +1,1147 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "WMS — Warehouse Management System API",
+        "description": "API REST do sistema de Gestão de Almoxarifado (Laravel 13 + Sanctum SPA).",
+        "contact": {
+            "name": "WMS",
+            "email": "suporte@wms.local"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Servidor local (Docker)"
+        }
+    ],
+    "paths": {
+        "/api/v1/adjustments": {
+            "get": {
+                "tags": [
+                    "Ajustes"
+                ],
+                "summary": "Listar ajustes",
+                "operationId": "046aee406b1237e458cfb8626b3d6e23",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "reason",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ajustes"
+                ],
+                "summary": "Criar ajuste (corrige estoque)",
+                "operationId": "e5ce90c013baf1b645eb945bd700ee8e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "product_id": {
+                                        "type": "integer"
+                                    },
+                                    "warehouse_id": {
+                                        "type": "integer"
+                                    },
+                                    "reason": {
+                                        "type": "string",
+                                        "enum": [
+                                            "erro",
+                                            "quebra",
+                                            "perda",
+                                            "roubo",
+                                            "vencimento",
+                                            "correcao"
+                                        ]
+                                    },
+                                    "quantity": {
+                                        "description": "Positivo (ganho) ou negativo (perda)",
+                                        "type": "number"
+                                    },
+                                    "observation": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado"
+                    },
+                    "422": {
+                        "description": "Validação"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/adjustments/{adjustment}": {
+            "get": {
+                "tags": [
+                    "Ajustes"
+                ],
+                "summary": "Detalhar ajuste",
+                "operationId": "c25efe1af2f9c19d0984f2a7819df8ff",
+                "responses": {
+                    "200": {
+                        "description": "Detalhe"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/login": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Autenticar usuário (SPA Sanctum cookie)",
+                "operationId": "bae68d1c55329ecb6e41f48285840c8f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "admin@wms.local"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "Admin@123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Credenciais inválidas"
+                    },
+                    "429": {
+                        "description": "Muitas tentativas"
+                    }
+                }
+            }
+        },
+        "/api/v1/me": {
+            "get": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Perfil do usuário autenticado (roles + permissões)",
+                "operationId": "13b43df400e475a157538f73617b8c3d",
+                "responses": {
+                    "200": {
+                        "description": "Perfil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "KPIs do painel (totais, estoque baixo, Curva ABC, pendências)",
+                "operationId": "a77570e4ef222214cbd3d2fadbce8d84",
+                "responses": {
+                    "200": {
+                        "description": "Resumo agregado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/dashboard/lots/expiring-soon": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Lotes com validade entre 7 e 90 dias",
+                "operationId": "63d8a1345b9cb6134ce3aecf1237b770",
+                "responses": {
+                    "200": {
+                        "description": "Lotes próximos do vencimento"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/dashboard/lots/expired": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Lotes já vencidos",
+                "operationId": "9b587aa339809d7a3ebf609d200801f9",
+                "responses": {
+                    "200": {
+                        "description": "Lotes vencidos"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/inventories": {
+            "get": {
+                "tags": [
+                    "Inventário"
+                ],
+                "summary": "Listar inventários",
+                "operationId": "425df31f832a0357248de9f6276e234f",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Inventário"
+                ],
+                "summary": "Criar inventário (gera itens por modalidade)",
+                "operationId": "348b35e68aba99e48dc5d67f988ad338",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "general",
+                                            "partial",
+                                            "rotating",
+                                            "by_category",
+                                            "by_location",
+                                            "by_lot"
+                                        ]
+                                    },
+                                    "warehouse_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado"
+                    },
+                    "422": {
+                        "description": "Validação"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/inventories/{inventory}": {
+            "get": {
+                "tags": [
+                    "Inventário"
+                ],
+                "summary": "Detalhar inventário (itens book×counted)",
+                "operationId": "d9fa50e7c470f27163b532890e6d3011",
+                "responses": {
+                    "200": {
+                        "description": "Detalhe"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/inventories/{inventory}/start": {
+            "post": {
+                "tags": [
+                    "Inventário"
+                ],
+                "summary": "Iniciar contagem",
+                "operationId": "822f9b68ad6e0fca487136848526d5c7",
+                "responses": {
+                    "200": {
+                        "description": "Em contagem"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/inventories/{inventory}/count": {
+            "post": {
+                "tags": [
+                    "Inventário"
+                ],
+                "summary": "Apontar contagem de item",
+                "operationId": "b1558b849aec9307611492d9deaf04ad",
+                "responses": {
+                    "200": {
+                        "description": "Item contado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/inventories/{inventory}/finalize": {
+            "post": {
+                "tags": [
+                    "Inventário"
+                ],
+                "summary": "Finalizar + ajuste automático",
+                "operationId": "09a2f8947c6215cf25575410f4f0a68f",
+                "responses": {
+                    "200": {
+                        "description": "Finalizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/inventories/{inventory}/cancel": {
+            "post": {
+                "tags": [
+                    "Inventário"
+                ],
+                "summary": "Cancelar",
+                "operationId": "7c1ec2e76c29c6a8ffe80f579e0fc070",
+                "responses": {
+                    "200": {
+                        "description": "Cancelado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/material-requests": {
+            "get": {
+                "tags": [
+                    "Solicitação de Materiais"
+                ],
+                "summary": "Listar solicitações de materiais",
+                "operationId": "635d8c8a568e758aa2c58e4de9096f31",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Solicitação de Materiais"
+                ],
+                "summary": "Criar solicitação de materiais",
+                "operationId": "09b221e7213fb30f5bd50196590d6a47",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "justification": {
+                                        "type": "string"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "product_id": {
+                                                    "type": "integer"
+                                                },
+                                                "quantity_requested": {
+                                                    "type": "number"
+                                                },
+                                                "warehouse_id": {
+                                                    "type": "integer",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado"
+                    },
+                    "422": {
+                        "description": "Validação"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/material-requests/{material_request}": {
+            "get": {
+                "tags": [
+                    "Solicitação de Materiais"
+                ],
+                "summary": "Detalhar solicitação (itens aninhados)",
+                "operationId": "5f2ef7fb452722baf5f19683ebf76d73",
+                "responses": {
+                    "200": {
+                        "description": "Detalhe"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/material-requests/{material_request}/approve": {
+            "post": {
+                "tags": [
+                    "Solicitação de Materiais"
+                ],
+                "summary": "Aprovar (valida disponibilidade)",
+                "operationId": "2d046f2bed200099e4359ff423e46381",
+                "responses": {
+                    "200": {
+                        "description": "Aprovado"
+                    },
+                    "422": {
+                        "description": "Estoque insuficiente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/material-requests/{material_request}/separate": {
+            "post": {
+                "tags": [
+                    "Solicitação de Materiais"
+                ],
+                "summary": "Separar",
+                "operationId": "94cdc2c41e14e3c4c64ff08ba0301e84",
+                "responses": {
+                    "200": {
+                        "description": "Separado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/material-requests/{material_request}/check": {
+            "post": {
+                "tags": [
+                    "Solicitação de Materiais"
+                ],
+                "summary": "Conferir",
+                "operationId": "568caac5cd3ed08b493fa88045dc68d5",
+                "responses": {
+                    "200": {
+                        "description": "Conferido"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/material-requests/{material_request}/deliver": {
+            "post": {
+                "tags": [
+                    "Solicitação de Materiais"
+                ],
+                "summary": "Entregar (consome estoque)",
+                "operationId": "36dd4c13ba405dc3fa12af7261788f43",
+                "responses": {
+                    "200": {
+                        "description": "Entregue"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/material-requests/{material_request}/finish": {
+            "post": {
+                "tags": [
+                    "Solicitação de Materiais"
+                ],
+                "summary": "Finalizar",
+                "operationId": "73c36eb570e630e6b15e85357d7d024a",
+                "responses": {
+                    "200": {
+                        "description": "Finalizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/material-requests/{material_request}/cancel": {
+            "post": {
+                "tags": [
+                    "Solicitação de Materiais"
+                ],
+                "summary": "Cancelar",
+                "operationId": "f2f6ce106092680f8ac1d44942c38429",
+                "responses": {
+                    "200": {
+                        "description": "Cancelado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/products": {
+            "get": {
+                "tags": [
+                    "Produtos"
+                ],
+                "summary": "Listar produtos (filtros, paginação, include)",
+                "operationId": "1ce27f90dd8c39cea9520bf45d58c7c2",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter[search]",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[category_id]",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "include",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Produtos"
+                ],
+                "summary": "Criar produto",
+                "operationId": "acaa0d3fdc74fd4b534e70fc016cf7f1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Product"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validação"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transfers": {
+            "get": {
+                "tags": [
+                    "Transferências"
+                ],
+                "summary": "Listar transferências",
+                "operationId": "d4d801c54209634608346715631e81e1",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Transferências"
+                ],
+                "summary": "Criar transferência",
+                "operationId": "ab55567560e28275078e7dd652ac595a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "origin_warehouse_id": {
+                                        "type": "integer"
+                                    },
+                                    "destination_warehouse_id": {
+                                        "type": "integer"
+                                    },
+                                    "observation": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "product_id": {
+                                                    "type": "integer"
+                                                },
+                                                "quantity": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado"
+                    },
+                    "422": {
+                        "description": "Validação"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transfers/{transfer}": {
+            "get": {
+                "tags": [
+                    "Transferências"
+                ],
+                "summary": "Detalhar transferência",
+                "operationId": "8a7ab7492b0c99090b17e38ba50ce07f",
+                "responses": {
+                    "200": {
+                        "description": "Detalhe"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transfers/{transfer}/ship": {
+            "post": {
+                "tags": [
+                    "Transferências"
+                ],
+                "summary": "Embarcar (debita origem)",
+                "operationId": "aa74d43e7d4ec8e647ea11f23f7fd072",
+                "responses": {
+                    "200": {
+                        "description": "Em trânsito"
+                    },
+                    "422": {
+                        "description": "Transição inválida"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transfers/{transfer}/receive": {
+            "post": {
+                "tags": [
+                    "Transferências"
+                ],
+                "summary": "Receber (credita destino)",
+                "operationId": "9c8f184ab7e50a0c30212a86fac45342",
+                "responses": {
+                    "200": {
+                        "description": "Recebida"
+                    },
+                    "422": {
+                        "description": "Transição inválida"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transfers/{transfer}/cancel": {
+            "post": {
+                "tags": [
+                    "Transferências"
+                ],
+                "summary": "Cancelar",
+                "operationId": "83a23ac017e698f2d5c7ed68f5d68027",
+                "responses": {
+                    "200": {
+                        "description": "Cancelada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Product": {
+                "title": "Produto",
+                "required": [
+                    "internal_code",
+                    "name",
+                    "unit_id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "internal_code": {
+                        "type": "string",
+                        "example": "PROD-0001"
+                    },
+                    "barcode": {
+                        "type": "string",
+                        "example": "7890000000001",
+                        "nullable": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Parafuso Hexagonal 10mm"
+                    },
+                    "category": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "unit": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "min_stock": {
+                        "type": "number",
+                        "example": 10
+                    },
+                    "max_stock": {
+                        "type": "number",
+                        "example": 500
+                    },
+                    "current_stock": {
+                        "type": "number",
+                        "example": 120
+                    },
+                    "reserved_stock": {
+                        "type": "number",
+                        "example": 0
+                    },
+                    "available_stock": {
+                        "type": "number",
+                        "example": 120
+                    },
+                    "last_cost": {
+                        "type": "number",
+                        "example": 1.5
+                    },
+                    "average_cost": {
+                        "type": "number",
+                        "example": 1.6
+                    },
+                    "sale_price": {
+                        "type": "number",
+                        "example": 3
+                    },
+                    "ncm": {
+                        "type": "string",
+                        "example": "7318.15.00",
+                        "nullable": true
+                    },
+                    "control_batch": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "control_expiry": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "serialized": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_below_min": {
+                        "type": "boolean",
+                        "example": false
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "Usuário",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Administrador"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "admin@wms.local"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "administrador"
+                        ]
+                    },
+                    "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "products.view"
+                        ]
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "bearerFormat": "session",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Ajustes",
+            "description": "Ajustes"
+        },
+        {
+            "name": "Autenticação",
+            "description": "Autenticação"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Dashboard"
+        },
+        {
+            "name": "Inventário",
+            "description": "Inventário"
+        },
+        {
+            "name": "Solicitação de Materiais",
+            "description": "Solicitação de Materiais"
+        },
+        {
+            "name": "Produtos",
+            "description": "Produtos"
+        },
+        {
+            "name": "Transferências",
+            "description": "Transferências"
+        }
+    ]
+}
