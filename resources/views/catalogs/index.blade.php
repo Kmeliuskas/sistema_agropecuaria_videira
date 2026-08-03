@@ -65,6 +65,20 @@
                                 <td class="px-4 py-3 text-muted-foreground">
                                     {{ $item->category?->name ?? '—' }}
                                 </td>
+                            @elseif ($key === 'categories')
+                                <td class="px-4 py-3">
+                                    @if (isset($item->categories) && $item->categories->isNotEmpty())
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach ($item->categories as $cat)
+                                                <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-muted text-foreground border border-border">
+                                                    {{ $cat->name }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-muted-foreground">—</span>
+                                    @endif
+                                </td>
                             @elseif ($key === 'color')
                                 <td class="px-4 py-3">
                                     @if ($item->color)

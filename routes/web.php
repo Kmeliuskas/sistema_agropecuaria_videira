@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Web\AttributeController;
 use App\Http\Controllers\Web\BrandController;
 use App\Http\Controllers\Web\CategoryController;
 use App\Http\Controllers\Web\WarehouseTypeController;
@@ -105,6 +106,17 @@ Route::middleware('auth')->group(function () {
     Route::put('/catalogos/categorias/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/catalogos/categorias/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
     Route::get('/api/categorias/{category}/atributos', [CategoryController::class, 'attributes'])->name('categories.attributes');
+    Route::post('/catalogos/categorias/{category}/atributos', [CategoryController::class, 'assignAttributes'])->name('categories.assign-attributes');
+    Route::delete('/catalogos/categorias/{category}/atributos/{attribute}', [CategoryController::class, 'unassignAttribute'])->name('categories.unassign-attribute');
+
+    // Atributos
+    Route::get('/catalogos/atributos', [AttributeController::class, 'index'])->name('attributes.index');
+    Route::get('/catalogos/atributos/novo', [AttributeController::class, 'create'])->name('attributes.create');
+    Route::post('/catalogos/atributos', [AttributeController::class, 'store'])->name('attributes.store');
+    Route::get('/catalogos/atributos/{attribute}', [AttributeController::class, 'show'])->name('attributes.show');
+    Route::get('/catalogos/atributos/{attribute}/editar', [AttributeController::class, 'edit'])->name('attributes.edit');
+    Route::put('/catalogos/atributos/{attribute}', [AttributeController::class, 'update'])->name('attributes.update');
+    Route::delete('/catalogos/atributos/{attribute}', [AttributeController::class, 'destroy'])->name('attributes.destroy');
 
     // Marcas
     Route::get('/catalogos/marcas', [BrandController::class, 'index'])->name('brands.index');

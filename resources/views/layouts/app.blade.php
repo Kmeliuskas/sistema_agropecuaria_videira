@@ -217,8 +217,8 @@
                 @endcanany
 
                 {{-- Catálogos --}}
-                @canany(['categories.view', 'brands.view', 'manufacturers.view', 'units.view', 'subcategories.view'])
-                <div x-data="{ open: {{ request()->routeIs('categories.*', 'brands.*', 'manufacturers.*', 'units.*', 'subcategories.*', 'catalog.*') ? 'true' : 'false' }} }">
+                @canany(['categories.view', 'brands.view', 'manufacturers.view', 'units.view', 'subcategories.view', 'attributes.view'])
+                <div x-data="{ open: {{ request()->routeIs('categories.*', 'brands.*', 'manufacturers.*', 'units.*', 'subcategories.*', 'attributes.*', 'catalog.*') ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open"
                             class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground">
                         <span class="flex items-center gap-3">
@@ -280,6 +280,16 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16M9 3v18" />
                             </svg>
                             Subcategorias
+                        </a>
+                        @endcan
+                        @can('attributes.view')
+                        <a href="{{ route('attributes.index') }}"
+                           class="flex items-center gap-3 rounded-lg px-3 py-2 pl-9 font-medium transition-colors duration-200
+                                  {{ request()->routeIs('attributes.*') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}">
+                            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 17l-4-4-4 4m8 0l4-4 4 4" />
+                            </svg>
+                            Atributos
                         </a>
                         @endcan
                     </div>

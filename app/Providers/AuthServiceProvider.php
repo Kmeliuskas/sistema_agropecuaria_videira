@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Adjustment;
+use App\Models\Attribute;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Employee;
@@ -27,6 +28,7 @@ use App\Models\User;
 use App\Models\Warehouse;
 use App\Models\WarehouseType;
 use App\Policies\AdjustmentPolicy;
+use App\Policies\AttributePolicy;
 use App\Policies\BrandPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\InventoryPolicy;
@@ -55,6 +57,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Category::class => CategoryPolicy::class,
+        Attribute::class => AttributePolicy::class,
         Brand::class => BrandPolicy::class,
         Manufacturer::class => ManufacturerPolicy::class,
         Supplier::class => SupplierPolicy::class,

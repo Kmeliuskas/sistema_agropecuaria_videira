@@ -19,6 +19,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'products' => ['view', 'create', 'update', 'delete'],
         'categories' => ['view', 'create', 'update', 'delete'],
         'subcategories' => ['view', 'create', 'update', 'delete'],
+        'attributes' => ['view', 'create', 'update', 'delete'],
         'brands' => ['view', 'create', 'update', 'delete'],
         'manufacturers' => ['view', 'create', 'update', 'delete'],
         'units' => ['view', 'create', 'update', 'delete'],
@@ -106,7 +107,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // 3. Garante leitura dos catálogos a todos os papéis não-admin, para
         // não quebrar o acesso às telas de catálogo já existentes.
-        $catalogViews = ['brands.view', 'manufacturers.view', 'units.view', 'subcategories.view'];
+        $catalogViews = ['brands.view', 'manufacturers.view', 'units.view', 'subcategories.view', 'attributes.view'];
         foreach (Role::where('name', '<>', 'administrador')->get() as $role) {
             $role->givePermissionTo(
                 array_filter($catalogViews, fn ($p) => isset($created[$p]))

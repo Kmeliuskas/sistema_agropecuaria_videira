@@ -104,7 +104,9 @@ class ProductController extends Controller
     {
         $this->authorize('update', $product);
 
-        return view('products.form', $this->formData() + ['product' => $product]);
+        $product->load('attributes');
+
+        return view('products.form', $this->formData($product) + ['product' => $product]);
     }
 
     /**
@@ -133,12 +135,15 @@ class ProductController extends Controller
     protected function syncAttributeValues(Product $product, array $attributeValues): void
     {
         foreach ($attributeValues as $attributeId => $value) {
-            if ($value === null || $value === '') {
+            if ($value === null || $value === '' || (is_array($value) && empty($value))) {
                 $product->attributes()->detach($attributeId);
                 continue;
             }
+
+            $stringValue = is_array($value) ? json_encode(array_values($value)) : (string) $value;
+
             $product->attributes()->syncWithoutDetaching([
-                $attributeId => ['value' => $value],
+                $attributeId => ['value' => $stringValue],
             ]);
         }
     }
@@ -214,13 +219,19 @@ class ProductController extends Controller
             $categoryAttributes = Category::find($categoryId)?->attributes()
                 ->orderByPivot('sort_order')
                 ->get()
-                ->map(fn ($attr) => [
-                    'id' => $attr->id,
-                    'name' => $attr->name,
-                    'slug' => $attr->slug,
-                    'type' => $attr->type,
-                    'options' => $attr->options,
-                ]);
+                ->map(function ($attr) {
+                    $options = is_string($attr->options) 
+                        ? (json_decode($attr->options, true) ?: array_map('trim', explode(',', $attr->options)))
+                        : (array) $attr->options;
+
+                    return [
+                        'id' => $attr->id,
+                        'name' => $attr->name,
+                        'slug' => $attr->slug,
+                        'type' => $attr->type,
+                        'options' => array_values(array_filter($options)),
+                    ];
+                }) ?? collect();
         }
 
         return [
@@ -235,13 +246,19 @@ class ProductController extends Controller
             'units' => $getActiveOptions(Unit::class, $product?->unit_id),
             'warehouses' => $getActiveOptions(Warehouse::class, $product?->warehouse_id),
             'categoryAttributes' => $categoryAttributes,
-            'allAttributes' => Attribute::query()->where('is_active', true)->orderBy('sort_order')->get()->map(fn ($attr) => [
-                'id' => $attr->id,
-                'name' => $attr->name,
-                'slug' => $attr->slug,
-                'type' => $attr->type,
-                'options' => $attr->options,
-            ]),
+            'allAttributes' => Attribute::query()->where('is_active', true)->orderBy('sort_order')->get()->map(function ($attr) {
+                $options = is_string($attr->options) 
+                    ? (json_decode($attr->options, true) ?: array_map('trim', explode(',', $attr->options)))
+                    : (array) $attr->options;
+
+                return [
+                    'id' => $attr->id,
+                    'name' => $attr->name,
+                    'slug' => $attr->slug,
+                    'type' => $attr->type,
+                    'options' => array_values(array_filter($options)),
+                ];
+            }),
         ];
     }
 
@@ -269,7 +286,7 @@ class ProductController extends Controller
             'average_cost' => ['nullable', 'numeric', 'min:0'],
             'active' => ['boolean'],
             'attribute_values' => ['nullable', 'array'],
-            'attribute_values.*' => ['nullable', 'string'],
+            'attribute_values.*' => ['nullable'],
         ]);
     }
 }

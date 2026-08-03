@@ -47,9 +47,25 @@
             <h3 class="mb-4 font-semibold text-foreground">Atributos específicos</h3>
             <dl class="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
                 @foreach ($product->attributes as $attr)
+                    @php
+                        $val = $attr->pivot?->value ?? '—';
+                        $decoded = json_decode($val, true);
+                    @endphp
                     <div>
                         <dt class="text-muted-foreground">{{ $attr->name }}</dt>
-                        <dd class="font-medium text-foreground">{{ $attr->pivot?->value ?? '—' }}</dd>
+                        <dd class="font-medium text-foreground mt-1">
+                            @if(is_array($decoded))
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach($decoded as $itemVal)
+                                        <span class="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-foreground border border-border">
+                                            {{ $itemVal }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @else
+                                {{ $val }}
+                            @endif
+                        </dd>
                     </div>
                 @endforeach
             </dl>

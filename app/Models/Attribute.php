@@ -25,8 +25,7 @@ class Attribute extends Model
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class, 'category_attribute')
-            ->withPivot('sort_order')
-            ->orderByPivot('sort_order');
+            ->withPivot('sort_order');
     }
 
     public function products(): BelongsToMany
