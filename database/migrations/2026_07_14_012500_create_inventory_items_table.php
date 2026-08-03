@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreignId('counter_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('counted_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique(['inventory_id', 'product_id', 'warehouse_id'], 'inv_item_unique_idx');
             $table->index('inventory_id');

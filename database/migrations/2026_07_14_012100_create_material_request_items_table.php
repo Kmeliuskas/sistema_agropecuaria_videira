@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('warehouse_id')->nullable()->constrained()->nullOnDelete();
             $table->text('observation')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index('material_request_id');
         });

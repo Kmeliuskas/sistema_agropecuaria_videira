@@ -28,21 +28,11 @@ class WarehouseTypeSeeder extends Seeder
             );
         }
 
-        // Mapeia os registros de almoxarifados existentes para os novos IDs
-        $typeMapping = [
-            'physical' => 'FIS',
-            'production' => 'PROD',
-            'obra' => 'OBRA',
-            'transit' => 'TRANS',
-        ];
-
-        foreach ($typeMapping as $oldType => $code) {
-            $typeObj = WarehouseType::where('code', $code)->first();
-            if ($typeObj) {
-                Warehouse::where('type', $oldType)
-                    ->whereNull('warehouse_type_id')
-                    ->update(['warehouse_type_id' => $typeObj->id]);
-            }
+        // Associa almoxarifados sem tipo atribuído ao tipo Físico padrão
+        $defaultType = WarehouseType::where('code', 'FIS')->first();
+        if ($defaultType) {
+            Warehouse::whereNull('warehouse_type_id')
+                ->update(['warehouse_type_id' => $defaultType->id]);
         }
     }
 }

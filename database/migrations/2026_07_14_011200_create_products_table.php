@@ -51,6 +51,8 @@ return new class extends Migration
             // Controle
             $table->boolean('control_batch')->default(false);
             $table->boolean('control_expiry')->default(false);
+            $table->date('expiry_date')->nullable();
+            $table->unsignedInteger('expiry_alert_days')->default(30);
             $table->boolean('serialized')->default(false);
             $table->boolean('active')->default(true);
 

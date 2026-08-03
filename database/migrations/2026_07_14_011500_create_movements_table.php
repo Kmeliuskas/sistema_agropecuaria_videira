@@ -33,6 +33,7 @@ return new class extends Migration
             $table->text('observation')->nullable();
             $table->timestamp('occurred_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index(['product_id', 'occurred_at']);
             $table->index(['warehouse_id', 'type']);

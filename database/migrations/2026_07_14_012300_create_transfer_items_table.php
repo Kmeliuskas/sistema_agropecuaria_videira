@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('quantity_received', 15, 4)->default(0);
             $table->text('observation')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index('transfer_id');
         });

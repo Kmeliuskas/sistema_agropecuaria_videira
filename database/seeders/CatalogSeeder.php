@@ -41,11 +41,15 @@ class CatalogSeeder extends Seeder
             Brand::firstOrCreate(['code' => str()->slug($b), 'name' => $b], ['code' => str()->slug($b), 'name' => $b, 'is_active' => true]);
         }
 
+        $physicalTypeId = \App\Models\WarehouseType::where('code', 'FIS')->value('id');
+        $prodTypeId = \App\Models\WarehouseType::where('code', 'PROD')->value('id');
+        $obraTypeId = \App\Models\WarehouseType::where('code', 'OBRA')->value('id');
+
         $warehouses = [
-            ['code' => 'CD', 'name' => 'Almoxarifado Central', 'type' => 'physical', 'is_default' => true, 'is_active' => true],
-            ['code' => 'FIL01', 'name' => 'Filial São Paulo', 'type' => 'physical', 'is_active' => true],
-            ['code' => 'PROD', 'name' => 'Produção', 'type' => 'production', 'is_active' => true],
-            ['code' => 'OBRA01', 'name' => 'Obra Centro', 'type' => 'obra', 'is_active' => true],
+            ['code' => 'CD', 'name' => 'Almoxarifado Central', 'warehouse_type_id' => $physicalTypeId, 'is_default' => true, 'is_active' => true],
+            ['code' => 'FIL01', 'name' => 'Filial São Paulo', 'warehouse_type_id' => $physicalTypeId, 'is_active' => true],
+            ['code' => 'PROD', 'name' => 'Produção', 'warehouse_type_id' => $prodTypeId, 'is_active' => true],
+            ['code' => 'OBRA01', 'name' => 'Obra Centro', 'warehouse_type_id' => $obraTypeId, 'is_active' => true],
         ];
         foreach ($warehouses as $w) {
             Warehouse::firstOrCreate(['code' => $w['code']], $w);

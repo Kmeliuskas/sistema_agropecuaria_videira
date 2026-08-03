@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('type')->default('physical'); // physical, production, obra, transit
+            $table->foreignId('warehouse_type_id')->nullable()->constrained('warehouse_types')->nullOnDelete();
             $table->string('responsible')->nullable();
             $table->string('document')->nullable(); // CNPJ
             $table->string('address')->nullable();

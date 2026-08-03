@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('in_conferencia', 15, 4)->default(0);
             $table->decimal('in_transit', 15, 4)->default(0);
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique(['product_id', 'warehouse_id'], 'stock_balances_unique_idx');
             $table->index('warehouse_id');
