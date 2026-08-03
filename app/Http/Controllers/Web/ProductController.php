@@ -88,6 +88,8 @@ class ProductController extends Controller
         $attributeValues = $data['attribute_values'] ?? [];
         unset($data['attribute_values']);
 
+        $data['control_expiry'] = ! empty($data['expiry_date']);
+
         $product = Product::create($data);
 
         $this->syncAttributeValues($product, $attributeValues);
@@ -119,6 +121,8 @@ class ProductController extends Controller
 
         $attributeValues = $data['attribute_values'] ?? [];
         unset($data['attribute_values']);
+
+        $data['control_expiry'] = ! empty($data['expiry_date']);
 
         $product->update($data);
         $this->syncAttributeValues($product, $attributeValues);

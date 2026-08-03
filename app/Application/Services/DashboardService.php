@@ -143,19 +143,17 @@ class DashboardService
     protected function expiringProducts(): array
     {
         $products = Product::query()
-            ->where('control_expiry', true)
             ->whereNotNull('expiry_date')
-            ->whereDate('expiry_date', '>=', now())
-            ->whereDate('expiry_date', '<=', now()->addDays(30))
+            ->whereDate('expiry_date', '>=', now()->format('Y-m-d'))
+            ->whereDate('expiry_date', '<=', now()->addDays(30)->format('Y-m-d'))
             ->orderBy('expiry_date')
             ->limit(10)
             ->get(['id', 'internal_code', 'name', 'expiry_date', 'expiry_alert_days']);
 
         return [
-            'count' => Product::where('control_expiry', true)
-                ->whereNotNull('expiry_date')
-                ->whereDate('expiry_date', '>=', now())
-                ->whereDate('expiry_date', '<=', now()->addDays(30))
+            'count' => Product::whereNotNull('expiry_date')
+                ->whereDate('expiry_date', '>=', now()->format('Y-m-d'))
+                ->whereDate('expiry_date', '<=', now()->addDays(30)->format('Y-m-d'))
                 ->count(),
             'items' => $products->map(fn ($p) => [
                 'id' => $p->id,
@@ -173,17 +171,15 @@ class DashboardService
     protected function expiredProducts(): array
     {
         $products = Product::query()
-            ->where('control_expiry', true)
             ->whereNotNull('expiry_date')
-            ->whereDate('expiry_date', '<', now())
+            ->whereDate('expiry_date', '<', now()->format('Y-m-d'))
             ->orderBy('expiry_date')
             ->limit(10)
             ->get(['id', 'internal_code', 'name', 'expiry_date']);
 
         return [
-            'count' => Product::where('control_expiry', true)
-                ->whereNotNull('expiry_date')
-                ->whereDate('expiry_date', '<', now())
+            'count' => Product::whereNotNull('expiry_date')
+                ->whereDate('expiry_date', '<', now()->format('Y-m-d'))
                 ->count(),
             'items' => $products->map(fn ($p) => [
                 'id' => $p->id,
