@@ -6,11 +6,18 @@ RUN apk add --no-cache \
     icu-dev \
     oniguruma-dev \
     libzip-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    giflib-dev \
+    webp-dev \
     zip \
     unzip \
     git \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install \
         bcmath \
+        gd \
         intl \
         pcntl \
         pdo_mysql \
