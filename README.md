@@ -181,4 +181,13 @@ Consulte o **Histórico (Kardex)** para ver o rastro completo de cada produto.
   php artisan view:clear
   php artisan optimize:clear
 ```
+### Permissoes
+Resumo do que foi ajustado
+1. app/Support/PermissionLabels.php — Adicionado o módulo attributes nos dois métodos:
 
+moduleLabel(): 'attributes' => 'Atributos' (rótulo amigável)
+modules(): 'attributes' => true (inclusão na lista de módulos conhecidos)
+2. database/seeders/RolesAndPermissionsSeeder.php — Adicionado:
+
+'attributes' => ['view', 'create', 'update', 'delete'] no array $modules
+'attributes.view' na lista $catalogViews (garante que todos os papéis não-admin possam visualizar)
