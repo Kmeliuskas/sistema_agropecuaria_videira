@@ -38,7 +38,7 @@ class DashboardService
             'warehouses' => Warehouse::count(),
             'stock_value' => (float) Product::where('active', true)
                 ->sum(DB::raw('current_stock * average_cost')),
-            'items_in_stock' => (float) StockBalance::sum('current'),
+            'items_in_stock' => (float) Product::where('active', true)->sum('current_stock'),
         ];
     }
 

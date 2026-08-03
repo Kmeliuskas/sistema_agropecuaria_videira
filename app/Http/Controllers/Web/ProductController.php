@@ -8,6 +8,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Manufacturer;
 use App\Models\Product;
+use App\Models\StockBalance;
 use App\Models\Subcategory;
 use App\Models\Unit;
 use App\Models\Warehouse;
@@ -92,6 +93,18 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
+        // Sincroniza estoque inicial no StockBalance
+        if ((float) $product->current_stock > 0 && $product->warehouse_id) {
+            StockBalance::updateOrCreate(
+                ['product_id' => $product->id, 'warehouse_id' => $product->warehouse_id],
+                [
+                    'current' => $product->current_stock,
+                    'reserved' => 0,
+                    'available' => $product->current_stock,
+                ]
+            );
+        }
+
         $this->syncAttributeValues($product, $attributeValues);
 
         return redirect()
@@ -116,6 +129,9 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product): RedirectResponse
     {
+        $previousStock = (float) $product->current_stock;
+        $previousWarehouse = $product->warehouse_id;
+
         $data = $this->validateProduct($request, $product);
         $this->normalizeNumeric($data);
 
@@ -127,6 +143,27 @@ class ProductController extends Controller
         $product->update($data);
         $this->syncAttributeValues($product, $attributeValues);
         $product->broadcastRowUpdate();
+
+        // Sincroniza StockBalance quando o estoque atual ou o almoxarifado muda
+        $newStock = (float) $product->current_stock;
+        $newWarehouse = $product->warehouse_id;
+
+        if ($newWarehouse) {
+            // Se mudou de almoxarifado, zera o saldo anterior
+            if ($previousWarehouse && $previousWarehouse !== $newWarehouse) {
+                StockBalance::where('product_id', $product->id)
+                    ->where('warehouse_id', $previousWarehouse)
+                    ->update(['current' => 0, 'available' => 0]);
+            }
+
+            StockBalance::updateOrCreate(
+                ['product_id' => $product->id, 'warehouse_id' => $newWarehouse],
+                [
+                    'current' => $newStock,
+                    'available' => max(0, $newStock),
+                ]
+            );
+        }
 
         return redirect()
             ->route('products.show', $product)
