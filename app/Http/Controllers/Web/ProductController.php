@@ -285,6 +285,8 @@ class ProductController extends Controller
             'last_cost' => ['nullable', 'numeric', 'min:0'],
             'average_cost' => ['nullable', 'numeric', 'min:0'],
             'active' => ['boolean'],
+            'expiry_date' => ['nullable', 'date'],
+            'expiry_alert_days' => ['nullable', 'integer', 'min:0'],
             'attribute_values' => ['nullable', 'array'],
             'attribute_values.*' => ['nullable'],
         ]);

@@ -40,6 +40,18 @@
             <div><dt class="text-muted-foreground">Estoque atual</dt><dd id="product_{{ $product->id }}" class="font-medium text-foreground">{{ number_format($product->current_stock, 0, ',', '.') }}</dd></div>
             <div><dt class="text-muted-foreground">Estoque mín.</dt><dd class="font-medium text-foreground">{{ number_format($product->min_stock, 0, ',', '.') }}</dd></div>
             <div><dt class="text-muted-foreground">Custo médio</dt><dd class="font-medium text-foreground">R$ {{ number_format($product->average_cost, 2, ',', '.') }}</dd></div>
+            @if ($product->control_expiry)
+            <div><dt class="text-muted-foreground">Validade</dt><dd class="font-medium text-foreground">
+                @if ($product->expiry_date)
+                    {{ \Carbon\Carbon::parse($product->expiry_date)->format('d/m/Y') }}
+                    @if ($product->expiry_date < now()->toDateString())
+                        <span class="badge badge-danger">VENCIDO</span>
+                    @endif
+                @else —
+                @endif
+            </dd></div>
+            <div><dt class="text-muted-foreground">Alerta de vencimento</dt><dd class="font-medium text-foreground">{{ $product->expiry_alert_days ?? 30 }} dias</dd></div>
+            @endif
         </dl>
 
         @if ($product->attributes->isNotEmpty())

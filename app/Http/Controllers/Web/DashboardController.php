@@ -25,6 +25,8 @@ class DashboardController extends Controller
             'abcCurve' => $data['abc_curve'],
             'pendingRequests' => $data['pending_requests'],
             'activeInventories' => $data['active_inventories'],
+            'expiringProducts' => $data['expiring_products'],
+            'expiredProducts' => $data['expired_products'],
             'movements30d' => $data['movements_30d'],
         ]);
     }

@@ -23,6 +23,7 @@ use Illuminate\Broadcasting\PrivateChannel;
     'ncm', 'cfop', 'cst',
     'control_batch', 'control_expiry', 'serialized', 'active',
     'warehouse_id', 'aisle', 'corridor', 'shelf', 'level', 'position', 'image',
+    'expiry_date', 'expiry_alert_days',
 ])]
 class Product extends Model
 {
@@ -53,6 +54,7 @@ class Product extends Model
             'control_expiry' => 'boolean',
             'serialized' => 'boolean',
             'active' => 'boolean',
+            'expiry_date' => 'date',
         ];
     }
 
@@ -219,5 +221,24 @@ class Product extends Model
             target: $domId,
             channel: new PrivateChannel('products'),
         );
+    }
+
+    /**
+     * Scope: produtos com validade próxima de vencer.
+     */
+    public function scopeExpiringSoon(Builder $query, int $days = 30): Builder
+    {
+        return $query->whereNotNull('expiry_date')
+            ->whereDate('expiry_date', '>=', now())
+            ->whereDate('expiry_date', '<=', now()->addDays($days));
+    }
+
+    /**
+     * Scope: produtos vencidos.
+     */
+    public function scopeExpired(Builder $query): Builder
+    {
+        return $query->whereNotNull('expiry_date')
+            ->whereDate('expiry_date', '<', now());
     }
 }

@@ -194,24 +194,44 @@
             </div>
         </div>
 
-        {{-- Inventários em andamento --}}
+        {{-- Produtos vencidos --}}
         <div class="card">
             <div class="border-b border-border px-5 py-4">
-                <h2 class="font-semibold text-foreground">Inventários em andamento</h2>
+                <h2 class="font-semibold text-foreground">Produtos Vencidos</h2>
             </div>
             <div class="p-5 text-sm">
-                @if (empty($activeInventories['items']))
-                    <p class="text-muted-foreground/70">Nenhum inventário ativo.</p>
+                @if (empty($expiredProducts['items']))
+                    <p class="text-muted-foreground/70">Nenhum produto vencido.</p>
                 @else
-                    @foreach ($activeInventories['items'] as $inv)
+                    @foreach ($expiredProducts['items'] as $p)
                         <div class="py-1.5">
                             <div class="flex items-center justify-between">
-                                <span class="font-medium text-foreground">{{ $inv['code'] }}</span>
-                                <span class="badge-muted">{{ ucfirst($inv['type']) }}</span>
+                                <span class="font-medium text-foreground">{{ $p['name'] }}</span>
+                                <span class="text-xs text-danger">{{ \Carbon\Carbon::parse($p['expiry_date'])->format('d/m/Y') }}</span>
                             </div>
-                            <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                                <div class="h-full rounded-full bg-primary transition-all duration-300" style="width: {{ round(($inv['progress'] ?? 0) * 100) }}%"></div>
+                            <div class="text-xs text-muted-foreground">{{ $p['code'] }}</div>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+
+        {{-- Produtos próximos ao vencimento --}}
+        <div class="card">
+            <div class="border-b border-border px-5 py-4">
+                <h2 class="font-semibold text-foreground">Próximos ao Vencimento</h2>
+            </div>
+            <div class="p-5 text-sm">
+                @if (empty($expiringProducts['items']))
+                    <p class="text-muted-foreground/70">Nenhum produto próximo ao vencimento.</p>
+                @else
+                    @foreach ($expiringProducts['items'] as $p)
+                        <div class="py-1.5">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium text-foreground">{{ $p['name'] }}</span>
+                                <span class="badge-warning">{{ $p['days_left'] }} dia(s)</span>
                             </div>
+                            <div class="text-xs text-muted-foreground">{{ $p['code'] }} · vence {{ \Carbon\Carbon::parse($p['expiry_date'])->format('d/m/Y') }}</div>
                         </div>
                     @endforeach
                 @endif

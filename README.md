@@ -71,9 +71,19 @@ Visão geral com indicadores:
   ajuste, com data, tipo, almoxarifado, motivo, quantidade, saldo após e usuário.
   Filtra por tipo e almoxarifado.
 
-### Catálogos (leitura)
-Listas de apoio usadas nos cadastros: **Categorias, Subcategorias, Marcas,
-Fabricantes, Fornecedores e Unidades de Medida**.
+### Catálogos
+Listas de apoio usados nos cadastros: **Categorias, Subcategorias, Marcas,
+Fabricantes, Fornecedores, Unidades de Medida e Atributos**. Todos permitem
+criar, editar, visualizar e excluir (exceto Unidades e Fabricantes que são
+somente leitura via interface).
+
+### Relatórios
+- **Comissão de Vendas** — movimentações de saída (vendas) com filtro por data
+  e vendedor. Mostra resumo por vendedor (total de vendas, quantidade e valor)
+  e detalhamento de cada saída.
+  - Exportação: **CSV**, **XLSX** (Excel) e **PDF**.
+  - Acesso: menu **Relatórios → Comissão de Vendas**.
+  - Permissão necessária: `reports.view`.
 
 ---
 
@@ -114,7 +124,7 @@ na interface web nesta versão**:
   backend, mas ainda não têm tela própria.
 - **Inventário (contagem e ajuste)** — disponível no backend, sem tela ainda.
 - **Controle de Lotes, Validade e Serial Number** — modelos existem, sem tela.
-- **Relatórios em PDF/Excel e exportação** — não implementados na interface.
+- **Relatórios avançados** — implementado apenas o Relatório de Comissão de Vendas (filtros por data/vendedor, exportação CSV/XLSX/PDF). Demais relatórios em desenvolvimento.
 - **Notificações** (e-mail/WhatsApp) e **integração com ERPs** (Protheus, SAP…).
 - **Reservas de estoque** pela interface.
 

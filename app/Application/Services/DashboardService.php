@@ -25,6 +25,8 @@ class DashboardService
             'abc_curve' => $this->abcCurve(),
             'pending_requests' => $this->pendingRequests(),
             'active_inventories' => $this->activeInventories(),
+            'expiring_products' => $this->expiringProducts(),
+            'expired_products' => $this->expiredProducts(),
             'movements_30d' => $this->recentMovements(),
         ];
     }
@@ -132,6 +134,63 @@ class DashboardService
                     'status' => $i->status,
                     'progress' => $i->progress(),
                 ])->all(),
+        ];
+    }
+
+    /**
+     * Produtos próximos ao vencimento (últimos 30 dias ou configurados).
+     */
+    protected function expiringProducts(): array
+    {
+        $products = Product::query()
+            ->where('control_expiry', true)
+            ->whereNotNull('expiry_date')
+            ->whereDate('expiry_date', '>=', now())
+            ->whereDate('expiry_date', '<=', now()->addDays(30))
+            ->orderBy('expiry_date')
+            ->limit(10)
+            ->get(['id', 'internal_code', 'name', 'expiry_date', 'expiry_alert_days']);
+
+        return [
+            'count' => Product::where('control_expiry', true)
+                ->whereNotNull('expiry_date')
+                ->whereDate('expiry_date', '>=', now())
+                ->whereDate('expiry_date', '<=', now()->addDays(30))
+                ->count(),
+            'items' => $products->map(fn ($p) => [
+                'id' => $p->id,
+                'code' => $p->internal_code,
+                'name' => $p->name,
+                'expiry_date' => $p->expiry_date,
+                'days_left' => now()->startOfDay()->diffInDays($p->expiry_date),
+            ])->all(),
+        ];
+    }
+
+    /**
+     * Produtos já vencidos.
+     */
+    protected function expiredProducts(): array
+    {
+        $products = Product::query()
+            ->where('control_expiry', true)
+            ->whereNotNull('expiry_date')
+            ->whereDate('expiry_date', '<', now())
+            ->orderBy('expiry_date')
+            ->limit(10)
+            ->get(['id', 'internal_code', 'name', 'expiry_date']);
+
+        return [
+            'count' => Product::where('control_expiry', true)
+                ->whereNotNull('expiry_date')
+                ->whereDate('expiry_date', '<', now())
+                ->count(),
+            'items' => $products->map(fn ($p) => [
+                'id' => $p->id,
+                'code' => $p->internal_code,
+                'name' => $p->name,
+                'expiry_date' => $p->expiry_date,
+            ])->all(),
         ];
     }
 

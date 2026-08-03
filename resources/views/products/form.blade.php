@@ -141,6 +141,19 @@
                                 placeholder="0"
                                 class="w-full rounded-lg border border-border px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
                         </div>
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-foreground">Validade (dd/mm/aaaa)</label>
+                            <input type="date" name="expiry_date"
+                                value="{{ old('expiry_date', isset($product) ? ($product->expiry_date ? $product->expiry_date->format('Y-m-d') : '') : '') }}"
+                                class="w-full rounded-lg border border-border px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-foreground">Alerta de vencimento (dias)</label>
+                            <input type="number" name="expiry_alert_days"
+                                value="{{ old('expiry_alert_days', isset($product) ? $product->expiry_alert_days : 30) }}"
+                                min="0"
+                                class="w-full rounded-lg border border-border px-3 py-2 text-sm shadow-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30">
+                        </div>
                         <div class="flex items-center gap-2 pt-6">
                             <input type="hidden" name="active" value="0">
                             <input type="checkbox" name="active" value="1"
