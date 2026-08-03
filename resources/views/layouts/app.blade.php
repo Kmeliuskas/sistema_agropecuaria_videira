@@ -296,7 +296,36 @@
                 </div>
                 @endcan
 
-                {{-- Administração (somente quem tem acesso a algum item) --}}
+                {{-- Relatórios --}}
+                @canany(['reports.view', 'audit.view'])
+                <div x-data="{ open: {{ request()->routeIs('reports.*', 'audit.*') ? 'true' : 'false' }} }">
+                    <button type="button" @click="open = !open"
+                            class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground">
+                        <span class="flex items-center gap-3">
+                            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v1a3 3 0 106 0m-6 0V9a3 3 0 016 0v8m-6 0h6" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 11V5a2 2 0 114 0v6M8 5a2 2 0 114 0v6H8z" />
+                            </svg>
+                            Relatórios
+                        </span>
+                        <svg :class="open ? 'rotate-180' : ''" class="h-4 w-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div x-show="open" x-cloak class="mt-1 space-y-1">
+                        @can('reports.view')
+                        <a href="{{ route('reports.commission') }}"
+                           class="flex items-center gap-3 rounded-lg px-3 py-2 pl-9 font-medium transition-colors duration-200
+                                  {{ request()->routeIs('reports.commission') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground' }}">
+                            <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-2.21 0-4.21.59-5.96 1.76l1.45 1.45A5.97 5.97 0 0112 10c1.66 0 3.14.69 4.22 1.76l1.45-1.45A7.958 7.958 0 0012 8zm0 10v-6m0 6v-6" />
+                            </svg>
+                            Comissão de Vendas
+                        </a>
+                        @endcan
+                    </div>
+                </div>
+                @endcanany
 
                 {{-- Administração (somente quem tem acesso a algum item) --}}
                 @canany(['users.view', 'roles.view', 'roles.assign'])

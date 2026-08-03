@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\AttributeController;
 use App\Http\Controllers\Web\BrandController;
 use App\Http\Controllers\Web\CategoryController;
 use App\Http\Controllers\Web\WarehouseTypeController;
+use App\Http\Controllers\Web\CommissionReportController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EntityGeneratorController;
 use App\Http\Controllers\Web\ManufacturerController;
@@ -197,4 +198,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/entidades/nova', [EntityGeneratorController::class, 'create'])->name('entities.create');
         Route::post('/entidades', [EntityGeneratorController::class, 'store'])->name('entities.store');
     });
+
+    // Relatórios
+    Route::get('/relatorios/comissoes', [CommissionReportController::class, 'index'])->name('reports.commission');
+    Route::get('/relatorios/comissoes/csv', [CommissionReportController::class, 'exportCsv'])->name('reports.commission.csv');
+    Route::get('/relatorios/comissoes/xlsx', [CommissionReportController::class, 'exportXlsx'])->name('reports.commission.xlsx');
+    Route::get('/relatorios/comissoes/pdf', [CommissionReportController::class, 'exportPdf'])->name('reports.commission.pdf');
 });

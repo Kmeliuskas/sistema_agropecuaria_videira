@@ -7,11 +7,13 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "barryvdh/laravel-dompdf": "*",
         "darkaonline/l5-swagger": "^11.1",
         "hotwired-laravel/turbo-laravel": "^2.6",
         "laravel/framework": "^13.8",
         "laravel/reverb": "^1.10",
         "laravel/tinker": "^3.0",
+        "maatwebsite/excel": "*",
         "predis/predis": "^3.5",
         "spatie/laravel-permission": "^8.3",
         "spatie/laravel-query-builder": "^7.3"
